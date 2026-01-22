@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .quiz-container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .quiz-header {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quiz-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .quiz-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .quiz-body {
+            padding: 30px;
+        }
+        
+        .question-number {
+            color: #6a11cb;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .question-text {
+            font-size: 22px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            padding: 18px 20px;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 17px;
+        }
+        
+        .option:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .option.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        
+        .option.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        
+        .option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #7f1d1d;
+        }
+        
+        .option-letter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .selected .option-letter,
+        .correct .option-letter {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-next {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-next:hover:not(:disabled) {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-restart {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .btn-restart:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-submit {
+            background-color: #8b5cf6;
+            color: white;
+        }
+        
+        .btn-submit:hover:not(:disabled) {
+            background-color: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .result-container {
+            text-align: center;
+            padding: 40px 30px;
+        }
+        
+        .result-icon {
+            font-size: 80px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 32px;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .result-score {
+            font-size: 60px;
+            font-weight: 800;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        
+        .result-text {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-left: 5px solid #10b981;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: #fee2e2;
+            color: #7f1d1d;
+            border-left: 5px solid #ef4444;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .quiz-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            .quiz-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+            .question-text {
+                font-size: 20px;
+            }
+            .quiz-footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <div class="quiz-title">
+                <i class="fas fa-brain"></i> Knowledge Quiz Challenge
+            </div>
+            <div class="quiz-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">Score</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="question-counter">1/10</div>
+                    <div class="stat-label">Question</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="timer">30</div>
+                    <div class="stat-label">Seconds</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
+        </div>
+
+        <div class="quiz-body" id="quiz-body">
+            <!-- Question screen -->
+            <div id="question-screen">
+                <div class="question-number" id="question-number">Question 1 of 10</div>
+                <h2 class="question-text" id="question-text">What is the capital of France?</h2>
+
+                <div class="options-container" id="options-container">
+                    <!-- Options will be generated by JavaScript -->
+                </div>
+
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <!-- Results screen -->
+            <div class="result-container hidden" id="result-screen">
+                <div class="result-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h2 class="result-title">Quiz Completed!</h2>
+                <div class="result-score" id="final-score">0/10</div>
+                <p class="result-text" id="result-message">You answered 0 questions correctly out of 10. Keep practicing to improve your knowledge!</p>
+
+                <div style="margin-top: 40px;">
+                    <button class="btn btn-restart" id="restart-btn">
+                        <i class="fas fa-redo"></i> Restart Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-footer">
+            <button class="btn btn-restart" id="restart-btn-bottom">
+                <i class="fas fa-redo"></i> Restart
+            </button>
+
+            <div>
+                <button class="btn btn-submit" id="submit-btn" disabled>
+                    <i class="fas fa-paper-plane"></i> Submit Answer
+                </button>
+                <button class="btn btn-next" id="next-btn">
+                    <i class="fas fa-arrow-right"></i> Next Question
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions data
+        const quizData = [{
+            question: "What is the capital of France?",
+            options: ["London", "Berlin", "Paris", "Madrid"],
+            correctAnswer: 2,
+            explanation: "Paris is the capital and most populous city of France."
+        }, {
+            question: "Which planet is known as the Red Planet?",
+            options: ["Venus", "Mars", "Jupiter", "Saturn"],
+            correctAnswer: 1,
+            explanation: "Mars is often called the Red Planet due to its reddish appearance."
+        }, {
+            question: "Who painted the Mona Lisa?",
+            options: ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Michelangelo"],
+            correctAnswer: 1,
+            explanation: "The Mona Lisa was painted by Leonardo da Vinci in the 16th century."
+        }, {
+            question: "What is the largest mammal in the world?",
+            options: ["African Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+            correctAnswer: 1,
+            explanation: "The Blue Whale is the largest mammal, reaching lengths up to 100 feet."
+        }, {
+            question: "Which element has the chemical symbol 'O'?",
+            options: ["Gold", "Oxygen", "Osmium", "Oganesson"],
+            correctAnswer: 1,
+            explanation: "Oxygen has the chemical symbol 'O' and atomic number 8."
+        }, {
+            question: "In which year did World War II end?",
+            options: ["1943", "1944", "1945", "1946"],
+            correctAnswer: 2,
+            explanation: "World War II ended in 1945 after the surrender of Axis powers."
+        }, {
+            question: "What is the hardest natural substance on Earth?",
+            options: ["Gold", "Iron", "Diamond", "Platinum"],
+            correctAnswer: 2,
+            explanation: "Diamond is the hardest known natural material on the Mohs scale."
+        }, {
+            question: "Who wrote 'Romeo and Juliet'?",
+            options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+            correctAnswer: 1,
+            explanation: "William Shakespeare wrote the tragedy 'Romeo and Juliet' in the 1590s."
+        }, {
+            question: "What is the smallest country in the world?",
+            options: ["Monaco", "Vatican City", "San Marino", "Liechtenstein"],
+            correctAnswer: 1,
+            explanation: "Vatican City is the smallest country by both area and population."
+        }, {
+            question: "Which gas do plants absorb from the atmosphere?",
+            options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+            correctAnswer: 2,
+            explanation: "Plants absorb carbon dioxide during photosynthesis to produce oxygen."
+        }];
+
+        // DOM Elements
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const questionNumber = document.getElementById('question-number');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const progressBar = document.getElementById('progress-bar');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const restartBtnBottom = document.getElementById('restart-btn-bottom');
+        const feedbackElement = document.getElementById('feedback');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const finalScore = document.getElementById('final-score');
+        const resultMessage = document.getElementById('result-message');
+
+        // Quiz state variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+        let timer = 30;
+        let timerInterval;
+        let quizCompleted = false;
+
+        // Initialize the quiz
+        function initQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedOption = null;
+            quizCompleted = false;
+
+            // Reset UI
+            scoreElement.textContent = score;
+            questionCounter.textContent = `1/${quizData.length}`;
+            progressBar.style.width = '0%';
+            timerElement.textContent = '30';
+
+            // Show question screen, hide result screen
+            questionScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+
+            // Reset buttons
+            submitBtn.disabled = true;
+            nextBtn.disabled = true;
+
+            // Load first question
+            loadQuestion();
+            startTimer();
+        }
+
+        // Load the current question
+        function loadQuestion() {
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            feedbackElement.textContent = '';
+            feedbackElement.className = 'feedback';
+
+            // Reset selection
+            selectedOption = null;
+
+            // Update question info
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+            questionNumber.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            questionCounter.textContent = `${currentQuestionIndex + 1}/${quizData.length}`;
+
+            // Update progress bar
+            const progressPercentage = (currentQuestionIndex / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            // Create option elements
+            const optionLetters = ['A', 'B', 'C', 'D'];
+            currentQuestion.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.dataset.index = index;
+
+                optionElement.innerHTML = `
+                    <div class="option-letter">${optionLetters[index]}</div>
+                    <div class="option-text">${option}</div>
+                `;
+
+                optionElement.addEventListener('click', () => selectOption(optionElement, index));
+                optionsContainer.appendChild(optionElement);
+            });
+
+            // Reset timer
+            resetTimer();
+
+            // Update button states
+            submitBtn.disabled = true;
+            nextBtn.disabled = true;
+        }
+
+        // Select an option
+        function selectOption(optionElement, optionIndex) {
+            // If quiz is completed, don't allow selection
+            if (quizCompleted) return;
+
+            // Remove selected class from all options
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+
+            // Add selected class to clicked option
+            optionElement.classList.add('selected');
+            selectedOption = optionIndex;
+
+            // Enable submit button
+            submitBtn.disabled = false;
+        }
+
+        // Submit answer
+        function submitAnswer() {
+            if (selectedOption === null) return;
+
+            // Disable all options
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+
+            // Get correct answer
+            const currentQuestion = quizData[currentQuestionIndex];
+            const correctIndex = currentQuestion.correctAnswer;
+
+            // Mark correct and incorrect options
+            document.querySelectorAll('.option').forEach(opt => {
+                const optIndex = parseInt(opt.dataset.index);
+
+                if (optIndex === correctIndex) {
+                    opt.classList.add('correct');
+                } else if (optIndex === selectedOption && optIndex !== correctIndex) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            // Check if answer is correct
+            const isCorrect = selectedOption === correctIndex;
+
+            // Update score if correct
+            if (isCorrect) {
+                score += 10;
+                scoreElement.textContent = score;
+                feedbackElement.textContent = `Correct! ${currentQuestion.explanation}`;
+                feedbackElement.classList.add('correct');
+            } else {
+                feedbackElement.textContent = `Incorrect. The correct answer is: ${currentQuestion.options[correctIndex]}. ${currentQuestion.explanation}`;
+                feedbackElement.classList.add('incorrect');
+            }
+
+            // Stop timer
+            clearInterval(timerInterval);
+
+            // Update button states
+            submitBtn.disabled = true;
+            nextBtn.disabled = false;
+
+            // If last question, change next button text
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerHTML = '<i class="fas fa-flag-checkered"></i> Finish Quiz';
+            }
+        }
+
+        // Go to next question
+        function nextQuestion() {
+            // If last question, show results
+            if (currentQuestionIndex === quizData.length - 1) {
+                showResults();
+                return;
+            }
+
+            // Move to next question
+            currentQuestionIndex++;
+            loadQuestion();
+            startTimer();
+        }
+
+        // Show results
+        function showResults() {
+            quizCompleted = true;
+
+            // Calculate percentage
+            const percentage = (score / (quizData.length * 10)) * 100;
+
+            // Update final score
+            finalScore.textContent = `${score}/${quizData.length * 10}`;
+
+            // Set result message based on score
+            let message = '';
+            if (percentage >= 80) {
+                message = `Excellent! You scored ${score} points. You're a true expert!`;
+            } else if (percentage >= 60) {
+                message = `Good job! You scored ${score} points. You have solid knowledge.`;
+            } else if (percentage >= 40) {
+                message = `Not bad! You scored ${score} points. Keep learning to improve.`;
+            } else {
+                message = `You scored ${score} points. Keep practicing to improve your knowledge!`;
+            }
+
+            resultMessage.textContent = message;
+
+            // Hide question screen, show result screen
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            // Update progress bar to 100%
+            progressBar.style.width = '100%';
+        }
+
+        // Timer functions
+        function startTimer() {
+            timer = 30;
+            timerElement.textContent = timer;
+            clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timer--;
+                timerElement.textContent = timer;
+
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    // Auto-submit if time runs out
+                    if (selectedOption !== null) {
+                        submitAnswer();
+                    } else {
+                        // If no option selected, show correct answer and move on
+                        submitBtn.disabled = true;
+                        nextBtn.disabled = false;
+                        showCorrectAnswer();
+                    }
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            timer = 30;
+            timerElement.textContent = timer;
+        }
+
+        function showCorrectAnswer() {
+            // Disable all options
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+
+            // Get correct answer
+            const currentQuestion = quizData[currentQuestionIndex];
+            const correctIndex = currentQuestion.correctAnswer;
+
+            // Mark correct option
+            document.querySelectorAll('.option').forEach(opt => {
+                const optIndex = parseInt(opt.dataset.index);
+                if (optIndex === correctIndex) {
+                    opt.classList.add('correct');
+                }
+            });
+
+            // Show feedback
+            feedbackElement.textContent = `Time's up! The correct answer is: ${currentQuestion.options[correctIndex]}. ${currentQuestion.explanation}`;
+            feedbackElement.classList.add('incorrect');
+        }
+
+        // Event listeners
+        submitBtn.addEventListener('click', submitAnswer);
+
+        nextBtn.addEventListener('click', nextQuestion);
+
+        restartBtn.addEventListener('click', initQuiz);
+        restartBtnBottom.addEventListener('click', initQuiz);
+
+        // Initialize the quiz when page loads
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+
+</html>
